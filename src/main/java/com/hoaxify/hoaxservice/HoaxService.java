@@ -2,6 +2,7 @@ package com.hoaxify.hoaxservice;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.hoaxify.filecontroller.FileAttachment;
+import com.hoaxify.filecontroller.FileAttachmentRepository;
 import com.hoaxify.hoax.Hoax;
 import com.hoaxify.hoax.vm.HoaxVM;
 import com.hoaxify.hoaxrepository.HoaxRepository;
@@ -28,10 +31,20 @@ public class HoaxService {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private FileAttachmentRepository fileAttachmentRepository;
 
 	public Hoax saveHoax(User user, Hoax hoax) {
 		hoax.setUser(user);
 		hoax.setTimestamp(new Date());
+		
+		if(hoax.getAttachment() != null) {
+			FileAttachment inDB = fileAttachmentRepository.findById(hoax.getAttachment().getId()).get();
+			inDB.setHoax(hoax);
+			hoax.setAttachment(inDB);
+		}
+		
 		return hoaxRepository.save(hoax);
 	}
 
